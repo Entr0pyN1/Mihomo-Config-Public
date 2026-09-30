@@ -1,1 +1,309 @@
-测试
+# ============================================================
+# Mihomo 覆写配置（FlClash 适配版）
+# 基于 v0.6 修改，针对 FlClash 的覆写机制做了以下适配：
+#   1. 移除自定义 GLOBAL 组（FlClash 自带全局模式管理）
+#   2. 移除 geodata-mode / geox-url（交由 FlClash 管理 geo 数据库）
+#   3. rule-providers 路径归入独立子目录，避免与内置规则集冲突
+#   4. 保留 url-test / fallback 的显式测速 URL 与 tolerance 设置
+# ============================================================
+
+# ------------------------- 代理组 -------------------------
+proxy-groups:
+  # 节点信息（流量/到期信息等）
+  - name: 节点信息
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Server.png
+    type: select
+    include-all: true
+    filter: (?i)剩余流量|下次重置|套餐到期
+
+  # 主要节点选择
+  - name: 节点选择
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Proxy.png
+    type: select
+    proxies:
+      - 自动选择
+      - 香港节点
+      - 台湾节点
+      - 新加坡节点
+      - 日本节点
+      - 美国节点
+      - 故障转移
+      - 手动选择
+      - 全局直连
+
+  # 直连
+  - name: 全局直连
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Direct.png
+    type: select
+    proxies:
+      - DIRECT
+
+  # 绕过规则
+  - name: 绕过规则
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Bypass.png
+    type: select
+    proxies:
+      - PASS
+
+  # 常用区域自动测速（url-test，测速间隔 60s）
+  - name: 自动选择
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Auto.png
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+    proxies:
+      - 香港节点
+      - 台湾节点
+      - 新加坡节点
+      - 日本节点
+
+  # 节点故障自动转移（fallback）
+  - name: 故障转移
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Drill.png
+    type: fallback
+    include-all: true
+    filter: (?i)香港|HK|台湾|TW|新加坡|SG|日本|JP
+    url: https://cp.cloudflare.com/generate_204
+    interval: 250
+
+  # 兜底节点（无规则命中时使用）
+  - name: Final
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Final.png
+    type: select
+    proxies:
+      - 节点选择
+      - 全局直连
+
+  # 常用地区节点（按关键字过滤，自动测速）
+  - name: 香港节点
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Hong_Kong.png
+    include-all: true
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+    filter: (?i)香港|HK
+
+  - name: 台湾节点
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Taiwan.png
+    include-all: true
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+    filter: (?i)台湾|TW
+
+  - name: 新加坡节点
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Singapore.png
+    include-all: true
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+    filter: (?i)新加坡|SG
+
+  - name: 日本节点
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Japan.png
+    include-all: true
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+    filter: (?i)日本|JP
+
+  - name: 美国节点
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/United_States.png
+    include-all: true
+    type: url-test
+    url: https://cp.cloudflare.com/generate_204
+    interval: 60
+    tolerance: 150
+    filter: (?i)美国|US
+
+  # 其他地区节点手动选择
+  - name: 手动选择
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Area.png
+    include-all: true
+    type: select
+    exclude-filter: (?i)香港|台湾|新加坡|日本|美国|剩余流量|重置剩余|套餐到期|更新订阅|永久地址|大陆访问|群组|欢迎加入
+
+  # 分流：GeoIP-CN
+  - name: GeoIP-CN
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China_Map.png
+    type: select
+    proxies:
+      - 全局直连
+      - 绕过规则
+
+  # 分流：GeoSite-CN
+  - name: GeoSite-CN
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/China_Map.png
+    type: select
+    proxies:
+      - 全局直连
+      - 绕过规则
+
+  # 广告拦截
+  - name: 广告拦截
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Advertising.png
+    type: select
+    proxies:
+      - REJECT
+      - 全局直连
+      - 绕过规则
+
+  # 微软中国
+  - name: 微软中国
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Microsoft.png
+    type: select
+    proxies:
+      - 全局直连
+      - 节点选择
+
+  # 微软 Copilot
+  - name: 微软Copilot
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Copilot.png
+    type: select
+    proxies:
+      - 节点选择
+      - 全局直连
+
+  # OneDrive
+  - name: OneDrive云
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/OneDrive.png
+    type: select
+    proxies:
+      - 全局直连
+      - 节点选择
+
+  # 谷歌服务
+  - name: 谷歌服务
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Google_Search.png
+    type: select
+    proxies:
+      - 节点选择
+      - 全局直连
+
+  # Spotify
+  - name: Spotify音乐
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Spotify.png
+    type: select
+    proxies:
+      - 节点选择
+      - 手动选择
+      - 全局直连
+
+  # Telegram
+  - name: Telegram电报
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Telegram.png
+    type: select
+    proxies:
+      - 节点选择
+      - 新加坡节点
+      - 全局直连
+
+# ------------------------- 规则集 -------------------------
+rule-providers:
+  # 微软中国 CDN
+  MicrosoftCDN:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/MicrosoftCDN.list
+    path: ./ruleset/flclash/MicrosoftCDN.list
+    interval: 86400
+    format: text
+
+  # 微软中国
+  Microsoft:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/Microsoft.list
+    path: ./ruleset/flclash/Microsoft.list
+    interval: 86400
+    format: text
+
+  # 微软 Copilot
+  Copilot:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/Copilot.list
+    path: ./ruleset/flclash/Copilot.list
+    interval: 86400
+    format: text
+
+  # 微软 OneDrive
+  OneDrive:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/OneDrive.list
+    path: ./ruleset/flclash/OneDrive.list
+    interval: 86400
+    format: text
+
+  # 谷歌服务
+  Google:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/Google.list
+    path: ./ruleset/flclash/Google.list
+    interval: 86400
+    format: text
+
+  # 谷歌中国（用于分流国内谷歌相关域名）
+  GoogleCN:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/GoogleCN.list
+    path: ./ruleset/flclash/GoogleCN.list
+    interval: 86400
+    format: text
+
+  # Spotify
+  Spotify:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/Spotify.list
+    path: ./ruleset/flclash/Spotify.list
+    interval: 86400
+    format: text
+
+  # Telegram
+  Telegram:
+    type: http
+    behavior: classical
+    url: https://ruleset.zcsouls.com/Rules/Clash%20Meta/Telegram.list
+    path: ./ruleset/flclash/Telegram.list
+    interval: 86400
+    format: text
+
+# ------------------------- 规则 -------------------------
+rules:
+  - GEOSITE,category-ads-all,广告拦截
+  - GEOIP,CN,GeoIP-CN
+  - RULE-SET,Google,谷歌服务
+  - RULE-SET,GoogleCN,谷歌服务
+  - GEOSITE,CN,GeoSite-CN
+  - GEOSITE,microsoft@cn,微软中国
+  - RULE-SET,Copilot,微软Copilot
+  - RULE-SET,MicrosoftCDN,微软中国
+  - RULE-SET,Microsoft,微软中国
+  - RULE-SET,OneDrive,OneDrive云
+  - RULE-SET,Spotify,Spotify音乐
+  - RULE-SET,Telegram,Telegram电报
+  - MATCH,Final
+
+# ------------------------- 基础设置 -------------------------
+# 局域网连接（FlClash 中也可由 UI 控制）
+allow-lan: false
+
+# 日志级别
+log-level: silent
+
+# TCP Keep Alive 设置
+keep-alive-interval: 15
+keep-alive-idle: 15
+disable-keep-alive: true
+
+# 统一延迟（启用后单次测速，结果更一致）
+unified-delay: true
